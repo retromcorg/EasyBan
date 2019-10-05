@@ -5,6 +5,9 @@ import uk.org.whoami.easyban.datasource.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import uk.org.whoami.easyban.util.*;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import uk.org.whoami.easyban.settings.*;
 
@@ -27,7 +30,34 @@ public class BanCommand extends EasyBanCommand
         this.database = database;
         config = settings;
     }
-    
+
+    java.time.LocalDateTime changeDateTimeByString(java.time.LocalDateTime current, String part,
+                                                   boolean increaseOrDecrease) {
+        java.time.LocalDateTime newDateTime = null;
+
+        Integer amount = Integer.parseInt(part.replaceAll("\\D", ""));
+        if (part.contains("S") || part.contains("s"))
+            newDateTime = increaseOrDecrease ? current.plusSeconds(amount) : current.minusSeconds(amount);
+        else if (part.contains("m"))
+            newDateTime = increaseOrDecrease ? current.plusMinutes(amount) : current.minusMinutes(amount);
+        else if (part.contains("h") || part.contains("H"))
+            newDateTime = increaseOrDecrease ? current.plusHours(amount) : current.minusHours(amount);
+        else if (part.contains("D") || part.contains("d"))
+            newDateTime = increaseOrDecrease ? current.plusDays(amount) : current.minusDays(amount);
+        else if (part.contains("W") || part.contains("w"))
+            newDateTime = increaseOrDecrease ? current.plusDays(amount * 7) : current.minusDays(amount * 7);
+        else if (part.contains("M"))
+            newDateTime = increaseOrDecrease ? current.plusMonths(amount) : current.minusMonths(amount);
+        else if (part.contains("Y") || part.contains("y"))
+            newDateTime = increaseOrDecrease ? current.plusYears(amount) : current.minusYears(amount);
+        else {
+
+        }
+
+        return newDateTime;
+    }
+
+
     @Override
     protected void execute(final CommandSender cs, final Command cmnd, final String cmd, final String[] args) {
         if (args.length == 0) {
@@ -48,7 +78,22 @@ public class BanCommand extends EasyBanCommand
                 until.add(12, min);
             }
             else {
-                to = args.length;
+                try {
+                    //Tempban
+                    LocalDateTime dateTime = LocalDateTime.now();
+                    LocalDateTime time = changeDateTimeByString(dateTime, args[args.length - 1], true);
+                    long epoch = time.atZone(ZoneId.systemDefault()).toEpochSecond();
+                    long current = System.currentTimeMillis() / 1000L;
+                    //Turn into Easy Ban Format
+                    until = Calendar.getInstance();
+                    final int min = (int) ((epoch - current) / 60L);
+                    until.add(12, min);
+                    to = args.length - 1;
+                } catch (Exception e) {
+                    //Most likely a Perm ban at this point :(
+                    until = null;
+                    to = args.length;
+                }
             }
             String tmp = "";
             for (int i = 1; i < to; ++i) {
