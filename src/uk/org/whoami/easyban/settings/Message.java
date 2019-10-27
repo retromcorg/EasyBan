@@ -53,7 +53,7 @@ public class Message extends Configuration {
     public String _(String message) {
         String ret = map.get(message);
         if(ret != null) {
-            return ret.replace("&", "\u00a7");
+            return ret.replaceAll("(&([a-f0-9]))", "\u00A7$2");
         }
         return message;
     }
