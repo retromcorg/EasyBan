@@ -1,10 +1,10 @@
 name: EasyBan
 main: uk.org.whoami.easyban.EasyBan
-version: 2.0
+version: 2.1
 description: 'Ban people/subnets/countries from "offline" Servers'
 author: whoami
 website: 'http://dev.bukkit.org/server-mods/easyban/'
-softdepend: [GeoIPTools, DiscordCore]
+softdepend: [GeoIPTools, DiscordCore, RetroJail]
 commands:
     ekick:
         description: Kick player

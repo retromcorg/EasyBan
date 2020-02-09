@@ -1,31 +1,25 @@
 package uk.org.whoami.easyban.commands;
 
-import uk.org.whoami.easyban.datasource.*;
-
+import net.dv8tion.jda.core.EmbedBuilder;
 import org.bukkit.Bukkit;
-import org.bukkit.command.*;
-import uk.org.whoami.easyban.util.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import uk.org.whoami.easyban.ConsoleLogger;
+import uk.org.whoami.easyban.datasource.DataSource;
+import uk.org.whoami.easyban.settings.Settings;
+import uk.org.whoami.easyban.util.Subnet;
 
+import java.awt.*;
+import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
-import uk.org.whoami.easyban.settings.*;
+import java.util.Calendar;
 
-import java.awt.Color;
-import java.text.*;
-import uk.org.whoami.easyban.*;
-import org.bukkit.entity.*;
-import org.bukkit.plugin.PluginManager;
-
-import com.johnymuffin.discordcore.DiscordCore;
-
-import net.dv8tion.jda.core.EmbedBuilder;
-
-public class BanCommand extends EasyBanCommand
-{
+public class BanCommand extends EasyBanCommand {
     private DataSource database;
     private Settings config;
-    
+
     public BanCommand(final DataSource database, Settings settings) {
         this.database = database;
         config = settings;
@@ -64,7 +58,17 @@ public class BanCommand extends EasyBanCommand
             return;
         }
         String playerNick = args[0];
-        final Player player = cs.getServer().getPlayer(playerNick);
+
+        Player player = cs.getServer().getPlayer(playerNick);
+        if (player == null) {
+            for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+                if (p.getName().equalsIgnoreCase(args[0])) {
+                    player = p;
+                    break;
+                }
+            }
+        }
+
         String reason = null;
         Calendar until = null;
         if (player != null) {
@@ -76,8 +80,7 @@ public class BanCommand extends EasyBanCommand
                 until = Calendar.getInstance();
                 final int min = Integer.parseInt(args[args.length - 1]);
                 until.add(12, min);
-            }
-            else {
+            } else {
                 try {
                     //Tempban
                     LocalDateTime dateTime = LocalDateTime.now();
@@ -118,9 +121,11 @@ public class BanCommand extends EasyBanCommand
             player.kickPlayer(kickmsg);
         }
         this.database.unbanNick(playerNick);
-        this.database.banNick(playerNick, this.admin, reason, until);
+        this.database.unbanNick(playerNick.toLowerCase());
+
+        this.database.banNick(playerNick.toLowerCase(), this.admin, reason, until);
         if (settings.isBanPublic()) {
-        	
+
             cs.getServer().broadcastMessage(playerNick + this.m._(" has been banned"));
             if (settings.isBanReasonPublic() && reason != null) {
                 cs.getServer().broadcastMessage(this.m._("Reason: ") + reason);
@@ -132,11 +137,11 @@ public class BanCommand extends EasyBanCommand
         ConsoleLogger.info(playerNick + " has been banned by " + this.admin);
         String commandSendToDiscord = "/eban ";
         for (int i = 0; i < args.length; i++) {
-        	commandSendToDiscord = commandSendToDiscord + args[i] + " ";
-        	
+            commandSendToDiscord = commandSendToDiscord + args[i] + " ";
+
         }
         //Discord
-        if(settings.isDiscordAuditLogEnabled()) {
+        if (settings.isDiscordAuditLogEnabled()) {
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("EasyBan Ban Command", null);
             eb.setColor(Color.RED);

@@ -22,6 +22,7 @@ public class EasyBan extends JavaPlugin {
     private boolean AuthmeHook = false;
     private Settings settings;
     public static DiscordCore discord;
+    private boolean retroJailHook = false;
 
     public DiscordCore getDiscord() {
         return discord;
@@ -69,6 +70,12 @@ public class EasyBan extends JavaPlugin {
             this.database = new YamlDataSource();
         }
         PluginManager pm = Bukkit.getServer().getPluginManager();
+
+        if (pm.getPlugin("RetroJail") != null) {
+            retroJailHook = true;
+        }
+
+
         if (settings.isAuthmeHookEnabled()) {
             if (pm.getPlugin("AuthMe") != null) {
                 Double versionD = Double.valueOf(pm.getPlugin("AuthMe").getDescription().getVersion());
@@ -83,7 +90,7 @@ public class EasyBan extends JavaPlugin {
         }
 
 
-        final EasyBanPlayerListener l = new EasyBanPlayerListener(this.database, AuthmeHook);
+        final EasyBanPlayerListener l = new EasyBanPlayerListener(this, this.database, AuthmeHook, retroJailHook);
         this.getServer().getPluginManager().registerEvent(Event.Type.PLAYER_LOGIN, (Listener) l, Event.Priority.Lowest, (Plugin) this);
         this.getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, (Listener) l, Event.Priority.Lowest, (Plugin) this);
         if (AuthmeHook) {
@@ -137,6 +144,7 @@ public class EasyBan extends JavaPlugin {
             }
             discord = (DiscordCore) getServer().getPluginManager().getPlugin("DiscordCore");
         }
+
     }
 
     private GeoIPLookup getGeoIPLookup() {
@@ -145,5 +153,9 @@ public class EasyBan extends JavaPlugin {
             return ((GeoIPTools) pl).getGeoIPLookup(364);
         }
         return null;
+    }
+
+    public boolean isRetroJailHook() {
+        return retroJailHook;
     }
 }
