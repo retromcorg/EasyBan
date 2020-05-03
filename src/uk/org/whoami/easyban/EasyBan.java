@@ -134,9 +134,9 @@ public class EasyBan extends JavaPlugin {
                 pm.disablePlugin(this);
                 return;
             }
-            if (this.settings.getDiscordChannelID().isEmpty()) {
+            if(this.settings.getDiscordBanChannelID().isEmpty() || this.settings.getDiscordUnbanChannelID().isEmpty()) {
                 ConsoleLogger.info("}---------------ERROR---------------{");
-                ConsoleLogger.info("Easybans Discord needs a Channel Defined");
+                ConsoleLogger.info("Easybans Discord needs a channel defined for unbans and bans");
                 ConsoleLogger.info("}---------------ERROR---------------{");
                 ConsoleLogger.info("Easyban Is Shutting Down Forcefully");
                 pm.disablePlugin(this);

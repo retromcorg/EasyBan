@@ -118,6 +118,14 @@ public class BanCommand extends EasyBanCommand {
             if (settings.isAppendCustomBanMessageEnabled()) {
                 kickmsg = kickmsg + " " + this.m._("custom_ban");
             }
+            String ip = player.getAddress().getAddress().getHostAddress();
+            for(Player p: Bukkit.getOnlinePlayers()) {
+                if(!p.getName().equalsIgnoreCase(player.getName())) {
+                    if(p.getAddress().getAddress().getHostAddress().equalsIgnoreCase(ip)) {
+                        p.kickPlayer(kickmsg);
+                    }
+                }
+            }
             player.kickPlayer(kickmsg);
         }
         this.database.unbanNick(playerNick);
@@ -142,12 +150,21 @@ public class BanCommand extends EasyBanCommand {
         }
         //Discord
         if (settings.isDiscordAuditLogEnabled()) {
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("EasyBan Ban Command", null);
-            eb.setColor(Color.RED);
-            eb.setDescription(playerNick + " Has Been Banned By " + this.admin);
-            eb.setFooter("Command: " + commandSendToDiscord, null);
-            uk.org.whoami.easyban.EasyBan.discord.Discord().DiscordSendEmbedToChannel(config.getDiscordChannelID(), eb);
+            try {
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.setTitle("EasyBan Ban Command", null);
+                eb.setColor(Color.RED);
+                if(until != null) {
+                    eb.setDescription("IGN: " + playerNick + "\nReason: " + reason + "\nUntil: " + DateFormat.getDateTimeInstance().format(until.getTime()));
+                } else {
+                    eb.setDescription("IGN: " + playerNick + "\nReason: " + reason + "\nUntil: permanent");
+                }
+                eb.setFooter("Command: " + commandSendToDiscord, null);
+                uk.org.whoami.easyban.EasyBan.discord.Discord().DiscordSendEmbedToChannel(config.getDiscordBanChannelID(), eb);
+            } catch (Exception e) {
+                cs.sendMessage("Discord Integration Error");
+            }
+
         }
 
 

@@ -35,12 +35,16 @@ public class UnbanCommand extends EasyBanCommand
         	
         }
         if(config.isDiscordAuditLogEnabled()) {
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("EasyBan Unban Command", null);
-            eb.setColor(Color.RED);
-            eb.setDescription(args[0] + " Has Been unbanned By " + this.admin);
-            eb.setFooter("Command: " + commandSendToDiscord, null);
-            uk.org.whoami.easyban.EasyBan.discord.Discord().DiscordSendEmbedToChannel(config.getDiscordChannelID(), eb);
+            try {
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.setTitle("EasyBan Unban Command", null);
+                eb.setColor(Color.RED);
+                eb.setDescription(args[0] + " Has Been unbanned By " + this.admin);
+                eb.setFooter("Command: " + commandSendToDiscord, null);
+                uk.org.whoami.easyban.EasyBan.discord.Discord().DiscordSendEmbedToChannel(config.getDiscordUnbanChannelID(), eb);
+            } catch (Exception e) {
+                cs.sendMessage("Discord Integration Error");
+            }
         }
     }
 }

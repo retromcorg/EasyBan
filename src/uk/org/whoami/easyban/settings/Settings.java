@@ -41,7 +41,8 @@ public final class Settings extends Configuration
         this.isAppendCustomKickMessageEnabled();
         this.isAppendCustomBanMessageEnabled();
         this.isDiscordAuditLogEnabled();
-        this.getDiscordChannelID();
+        this.getDiscordBanChannelID();
+        this.getDiscordUnbanChannelID();
         this.isAuthmeHookEnabled();
     }
 
@@ -60,8 +61,16 @@ public final class Settings extends Configuration
         }
         return this.getBoolean(key, true);
     }
-    public String getDiscordChannelID() {
-        final String key = "discord.channelid";
+    public String getDiscordBanChannelID() {
+        final String key = "discord.channel.ban";
+        if (this.getString(key) == null) {
+            this.setProperty(key, (Object)"");
+        }
+        return this.getString(key);
+    }
+
+    public String getDiscordUnbanChannelID() {
+        final String key = "discord.channel.unban";
         if (this.getString(key) == null) {
             this.setProperty(key, (Object)"");
         }

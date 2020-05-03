@@ -40,7 +40,11 @@ public class EasyBanPlayerListener extends PlayerListener {
         final String ip = event.getKickMessage();
         //Later versions use lowercase names
         if (this.database.isNickBanned(name) || this.database.isNickBanned(name.toLowerCase())) {
-            final HashMap<String, String> banInfo = this.database.getBanInformation(name);
+            HashMap<String, String> banInfo = null;
+            banInfo = this.database.getBanInformation(name);
+            if(banInfo == null) {
+                banInfo = this.database.getBanInformation(name.toLowerCase());
+            }
             String kickmsg = this.msg._("You have been banned by ") + banInfo.get("admin");
             if (banInfo.containsKey("reason")) {
                 kickmsg = kickmsg + " " + this.msg._("Reason: ") + banInfo.get("reason");
