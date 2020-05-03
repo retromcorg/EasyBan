@@ -24,7 +24,7 @@ public class RetroLoginAuthme extends CustomEventListener implements Listener {
                 return;
             }
             System.out.println("Player Login Recieved From Authme: " + p.getName());
-            this.database.addIpToHistory(p.getName(), p.getAddress().getHostName());
+            this.database.addIpToHistory(p.getName(), p.getAddress().getAddress().getHostAddress());
         }
 
 
