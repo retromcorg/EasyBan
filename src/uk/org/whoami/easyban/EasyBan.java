@@ -1,25 +1,31 @@
 package uk.org.whoami.easyban;
 
-import org.bukkit.plugin.java.*;
-
 import com.johnymuffin.discordcore.DiscordCore;
-
-import uk.org.whoami.easyban.settings.*;
-import org.bukkit.plugin.*;
-import uk.org.whoami.easyban.datasource.*;
-import org.bukkit.event.*;
-import uk.org.whoami.easyban.listener.*;
-import uk.org.whoami.easyban.tasks.*;
-
 import org.bukkit.Bukkit;
-import org.bukkit.command.*;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.event.Event;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
 import uk.org.whoami.easyban.commands.*;
-import uk.org.whoami.geoip.*;
+import uk.org.whoami.easyban.datasource.DataSource;
+import uk.org.whoami.easyban.datasource.HSQLDataSource;
+import uk.org.whoami.easyban.datasource.MySQLDataSource;
+import uk.org.whoami.easyban.datasource.YamlDataSource;
+import uk.org.whoami.easyban.listener.EasyBanCountryListener;
+import uk.org.whoami.easyban.listener.EasyBanPlayerListener;
+import uk.org.whoami.easyban.listener.RetroLoginAuthme;
+import uk.org.whoami.easyban.settings.Settings;
+import uk.org.whoami.easyban.tasks.UnbanTask;
+import uk.org.whoami.geoip.GeoIPLookup;
+import uk.org.whoami.geoip.GeoIPTools;
 
 public class EasyBan extends JavaPlugin {
     private DataSource database;
     private EasyBan plugin;
     private boolean AuthmeHook = false;
+    private boolean isProjectPoseidonActive = false;
     private Settings settings;
     public static DiscordCore discord;
 
@@ -70,6 +76,13 @@ public class EasyBan extends JavaPlugin {
         }
         PluginManager pm = Bukkit.getServer().getPluginManager();
 
+        if (testClassExistence("com.projectposeidon.api.PoseidonUUID")) {
+            isProjectPoseidonActive = true;
+            ConsoleLogger.info("Project Poseidon support enabled.");
+        } else {
+            ConsoleLogger.info("Project Poseidon support disabled.");
+        }
+
 
         if (settings.isAuthmeHookEnabled()) {
             if (pm.getPlugin("AuthMe") != null) {
@@ -85,9 +98,10 @@ public class EasyBan extends JavaPlugin {
         }
 
 
-        final EasyBanPlayerListener l = new EasyBanPlayerListener(this, this.database, AuthmeHook);
+        final EasyBanPlayerListener l = new EasyBanPlayerListener(this, this.database, AuthmeHook, isProjectPoseidonActive);
         this.getServer().getPluginManager().registerEvent(Event.Type.PLAYER_LOGIN, (Listener) l, Event.Priority.Lowest, (Plugin) this);
         this.getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, (Listener) l, Event.Priority.Lowest, (Plugin) this);
+        this.getServer().getPluginManager().registerEvent(Event.Type.PLAYER_PRELOGIN, (Listener) l, Event.Priority.Lowest, (Plugin) this);
         if (AuthmeHook) {
             final RetroLoginAuthme RLE = new RetroLoginAuthme(this.database);
             this.getServer().getPluginManager().registerEvent(Event.Type.CUSTOM_EVENT, RLE, Event.Priority.Lowest, this);
@@ -129,7 +143,7 @@ public class EasyBan extends JavaPlugin {
                 pm.disablePlugin(this);
                 return;
             }
-            if(this.settings.getDiscordBanChannelID().isEmpty() || this.settings.getDiscordUnbanChannelID().isEmpty()) {
+            if (this.settings.getDiscordBanChannelID().isEmpty() || this.settings.getDiscordUnbanChannelID().isEmpty()) {
                 ConsoleLogger.info("}---------------ERROR---------------{");
                 ConsoleLogger.info("Easybans Discord needs a channel defined for unbans and bans");
                 ConsoleLogger.info("}---------------ERROR---------------{");
@@ -148,6 +162,15 @@ public class EasyBan extends JavaPlugin {
             return ((GeoIPTools) pl).getGeoIPLookup(364);
         }
         return null;
+    }
+
+    private boolean testClassExistence(String className) {
+        try {
+            Class.forName(className);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
 }

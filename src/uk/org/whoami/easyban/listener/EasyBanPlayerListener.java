@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerPreLoginEvent;
 import uk.org.whoami.easyban.ConsoleLogger;
 import uk.org.whoami.easyban.EasyBan;
 import uk.org.whoami.easyban.datasource.DataSource;
@@ -18,13 +19,56 @@ public class EasyBanPlayerListener extends PlayerListener {
     private DataSource database;
     private Message msg;
     private boolean AuthmeHook;
+    private boolean isProjectPoseidonActive;
     private EasyBan eb;
 
-    public EasyBanPlayerListener(EasyBan easyBan, final DataSource database, boolean authmeHook) {
+    public EasyBanPlayerListener(EasyBan easyBan, final DataSource database, boolean authmeHook, boolean isProjectPoseidonActive) {
+        this.isProjectPoseidonActive = isProjectPoseidonActive;
         eb = easyBan;
         this.database = database;
         this.msg = Message.getInstance();
         this.AuthmeHook = authmeHook;
+    }
+
+    public void onPlayerPreLogin(PlayerPreLoginEvent event) {
+        if(!isProjectPoseidonActive) {
+            return;
+        }
+
+
+        final String name = event.getName();
+        final String ip = event.getAddress().getHostAddress();
+        //Later versions use lowercase names
+        if (this.database.isNickBanned(name) || this.database.isNickBanned(name.toLowerCase())) {
+            HashMap<String, String> banInfo = null;
+            banInfo = this.database.getBanInformation(name);
+            if (banInfo == null) {
+                banInfo = this.database.getBanInformation(name.toLowerCase());
+            }
+            String kickmsg = this.msg._("You have been banned by ") + banInfo.get("admin");
+            if (banInfo.containsKey("reason")) {
+                kickmsg = kickmsg + " " + this.msg._("Reason: ") + banInfo.get("reason");
+            }
+            if (banInfo.containsKey("until")) {
+                final Long unixTime = Long.parseLong(banInfo.get("until"));
+                kickmsg = kickmsg + " " + this.msg._("Until: ") + DateFormat.getDateTimeInstance().format(new Date(unixTime));
+            }
+            if (Settings.getInstance().isAppendCustomBanMessageEnabled()) {
+                kickmsg = kickmsg + " " + this.msg._("custom_ban");
+            }
+
+            //Normal EasyBan
+            event.cancelPlayerLogin(kickmsg);
+            return;
+
+        }
+        if (this.database.isIpBanned(ip)) {
+            event.cancelPlayerLogin(this.msg._("You are banned"));
+            ConsoleLogger.info("IP Ban for " + name + " detected");
+            return;
+
+        }
+
     }
 
     public void onPlayerLogin(final PlayerLoginEvent event) {
