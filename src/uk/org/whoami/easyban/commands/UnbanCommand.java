@@ -1,12 +1,12 @@
 package uk.org.whoami.easyban.commands;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import uk.org.whoami.easyban.datasource.*;
 
 import java.awt.Color;
 
 import org.bukkit.command.*;
 
-import net.dv8tion.jda.core.EmbedBuilder;
 import uk.org.whoami.easyban.*;
 import uk.org.whoami.easyban.settings.Settings;
 
@@ -41,7 +41,7 @@ public class UnbanCommand extends EasyBanCommand
                 eb.setColor(Color.RED);
                 eb.setDescription(args[0] + " Has Been unbanned By " + this.admin);
                 eb.setFooter("Command: " + commandSendToDiscord, null);
-                uk.org.whoami.easyban.EasyBan.discord.Discord().DiscordSendEmbedToChannel(config.getDiscordUnbanChannelID(), eb);
+                EasyBan.discord.getDiscordBot().jda.getTextChannelById(config.getDiscordUnbanChannelID()).sendMessage(eb.build()).queue();
             } catch (Exception e) {
                 cs.sendMessage("Discord Integration Error");
             }

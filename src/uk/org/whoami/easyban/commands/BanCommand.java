@@ -1,11 +1,12 @@
 package uk.org.whoami.easyban.commands;
 
-import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.api.EmbedBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import uk.org.whoami.easyban.ConsoleLogger;
+import uk.org.whoami.easyban.EasyBan;
 import uk.org.whoami.easyban.datasource.DataSource;
 import uk.org.whoami.easyban.settings.Settings;
 import uk.org.whoami.easyban.util.Subnet;
@@ -119,7 +120,7 @@ public class BanCommand extends EasyBanCommand {
                 kickmsg = kickmsg + " " + this.m._("custom_ban");
             }
             String ip = player.getAddress().getAddress().getHostAddress();
-            for(Player p: Bukkit.getOnlinePlayers()) {
+            for(Player p: Bukkit.getServer().getOnlinePlayers()) {
                 if(!p.getName().equalsIgnoreCase(player.getName())) {
                     if(p.getAddress().getAddress().getHostAddress().equalsIgnoreCase(ip)) {
                         p.kickPlayer(kickmsg);
@@ -160,7 +161,7 @@ public class BanCommand extends EasyBanCommand {
                     eb.setDescription("IGN: " + playerNick + "\nReason: " + reason + "\nUntil: permanent");
                 }
                 eb.setFooter("Command: " + commandSendToDiscord, null);
-                uk.org.whoami.easyban.EasyBan.discord.Discord().DiscordSendEmbedToChannel(config.getDiscordBanChannelID(), eb);
+                EasyBan.discord.getDiscordBot().jda.getTextChannelById(config.getDiscordBanChannelID()).sendMessage(eb.build()).queue();
             } catch (Exception e) {
                 cs.sendMessage("Discord Integration Error");
             }

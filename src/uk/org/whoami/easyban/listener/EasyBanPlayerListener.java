@@ -1,8 +1,5 @@
 package uk.org.whoami.easyban.listener;
 
-import com.johnymuffin.beta.retrojail.RetroJail;
-import com.johnymuffin.beta.retrojail.punishmentType;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerListener;
@@ -21,12 +18,10 @@ public class EasyBanPlayerListener extends PlayerListener {
     private DataSource database;
     private Message msg;
     private boolean AuthmeHook;
-    private boolean retroJailHook;
     private EasyBan eb;
 
-    public EasyBanPlayerListener(EasyBan easyBan, final DataSource database, boolean authmeHook, boolean retrojailhook) {
+    public EasyBanPlayerListener(EasyBan easyBan, final DataSource database, boolean authmeHook) {
         eb = easyBan;
-        retroJailHook = retrojailhook;
         this.database = database;
         this.msg = Message.getInstance();
         this.AuthmeHook = authmeHook;
@@ -42,7 +37,7 @@ public class EasyBanPlayerListener extends PlayerListener {
         if (this.database.isNickBanned(name) || this.database.isNickBanned(name.toLowerCase())) {
             HashMap<String, String> banInfo = null;
             banInfo = this.database.getBanInformation(name);
-            if(banInfo == null) {
+            if (banInfo == null) {
                 banInfo = this.database.getBanInformation(name.toLowerCase());
             }
             String kickmsg = this.msg._("You have been banned by ") + banInfo.get("admin");
@@ -57,47 +52,17 @@ public class EasyBanPlayerListener extends PlayerListener {
                 kickmsg = kickmsg + " " + this.msg._("custom_ban");
             }
 
-            if (retroJailHook) {
-                //Hook into Retro Jail
-                RetroJail rj = (RetroJail) Bukkit.getServer().getPluginManager().getPlugin("RetroJail");
-                if (banInfo.containsKey("until")) {
-                    rj.addUser(name.toLowerCase(), punishmentType.tempBan);
-                    String finalKickmsg = kickmsg;
-                    Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(eb, new Runnable() {
-                        public void run() {
-                            event.getPlayer().sendMessage(finalKickmsg);
-                        }
-                    }, 30L);
-                    return;
-                } else {
-                    rj.addUser(name.toLowerCase(), punishmentType.ban);
-                    //event.getPlayer().sendMessage(kickmsg);
-                    return;
-                }
-            } else {
-                //Normal EasyBan
-                event.disallow(PlayerLoginEvent.Result.KICK_BANNED, kickmsg);
-                ConsoleLogger.info("Ban for " + name + " detected");
-                return;
-            }
+            //Normal EasyBan
+            event.disallow(PlayerLoginEvent.Result.KICK_BANNED, kickmsg);
+            ConsoleLogger.info("Ban for " + name + " detected");
+            return;
 
         }
         if (this.database.isIpBanned(ip)) {
-            if (retroJailHook) {
-                RetroJail rj = (RetroJail) Bukkit.getServer().getPluginManager().getPlugin("RetroJail");
-                rj.addUser(name.toLowerCase(), punishmentType.ban);
-                //event.getPlayer().sendMessage("You are banned");
-                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(eb, new Runnable() {
-                    public void run() {
-                        event.getPlayer().sendMessage("You are banned");
-                    }
-                }, 30L);
-                return;
-            } else {
-                event.disallow(PlayerLoginEvent.Result.KICK_BANNED, this.msg._("You are banned"));
-                ConsoleLogger.info("IP Ban for " + name + " detected");
-                return;
-            }
+            event.disallow(PlayerLoginEvent.Result.KICK_BANNED, this.msg._("You are banned"));
+            ConsoleLogger.info("IP Ban for " + name + " detected");
+            return;
+
         }
         if (this.database.isNickWhitelisted(event.getPlayer().getName())) {
             ConsoleLogger.info("Whitelist entry for " + name + " found");
@@ -140,38 +105,19 @@ public class EasyBanPlayerListener extends PlayerListener {
                 kickmsg = kickmsg + " " + this.msg._("custom_ban");
             }
 
-            if (retroJailHook) {
-                //Hook into Retro Jail
-                RetroJail rj = (RetroJail) Bukkit.getServer().getPluginManager().getPlugin("RetroJail");
-                if (banInfo.containsKey("until")) {
-                    rj.addUser(name.toLowerCase(), punishmentType.tempBan);
-                    event.getPlayer().sendMessage(kickmsg);
-                    return;
-                } else {
-                    rj.addUser(name.toLowerCase(), punishmentType.ban);
-                    event.getPlayer().sendMessage(kickmsg);
-                    return;
-                }
-            } else {
-                //Normal EasyBan
-                player.kickPlayer(kickmsg);
-                ConsoleLogger.info("Ban for " + name + " detected");
-                return;
-            }
+            //Normal EasyBan
+            player.kickPlayer(kickmsg);
+            ConsoleLogger.info("Ban for " + name + " detected");
+            return;
 
 
         }
         if (this.database.isIpBanned(ip)) {
-            if (retroJailHook) {
-                RetroJail rj = (RetroJail) Bukkit.getServer().getPluginManager().getPlugin("RetroJail");
-                rj.addUser(name.toLowerCase(), punishmentType.ban);
-                event.getPlayer().sendMessage("You are banned");
-                return;
-            } else {
-                player.kickPlayer(this.msg._("You are banned"));
-                ConsoleLogger.info("IP Ban for " + name + " detected");
-                return;
-            }
+
+            player.kickPlayer(this.msg._("You are banned"));
+            ConsoleLogger.info("IP Ban for " + name + " detected");
+            return;
+
         }
         if (this.database.isNickWhitelisted(event.getPlayer().getName())) {
             ConsoleLogger.info("Whitelist entry for " + name + " found");

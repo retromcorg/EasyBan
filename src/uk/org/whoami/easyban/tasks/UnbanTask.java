@@ -1,7 +1,8 @@
 package uk.org.whoami.easyban.tasks;
 
-import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.api.EmbedBuilder;
 import uk.org.whoami.easyban.ConsoleLogger;
+import uk.org.whoami.easyban.EasyBan;
 import uk.org.whoami.easyban.datasource.DataSource;
 import uk.org.whoami.easyban.settings.Settings;
 
@@ -38,7 +39,7 @@ public class UnbanTask implements Runnable {
                         eb.setColor(Color.RED);
                         eb.setDescription(name + " Has Been unbanned By Timer \n" + name + " was banned by " + banInfo.get("admin") + "\nReason: " + banInfo.get("reason"));
                         eb.setFooter("Unbanned Automatically On Timer", null);
-                        uk.org.whoami.easyban.EasyBan.discord.Discord().DiscordSendEmbedToChannel(config.getDiscordUnbanChannelID(), eb);
+                        EasyBan.discord.getDiscordBot().jda.getTextChannelById(config.getDiscordUnbanChannelID()).sendMessage(eb.build()).queue();
                     } catch (Exception e) {
                         ConsoleLogger.info("Discord Integration Error");
                     }
