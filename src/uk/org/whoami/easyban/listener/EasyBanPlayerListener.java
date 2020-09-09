@@ -126,7 +126,7 @@ public class EasyBanPlayerListener extends PlayerListener {
         final String name = player.getName();
         final String ip = player.getAddress().getAddress().getHostAddress();
         if (!AuthmeHook) {
-            database.addIpToHistory(name, ip);
+            database.addIpToHistory(name.toLowerCase(), ip);
         }
         if (this.database.isNickBanned(name) || this.database.isNickBanned(name.toLowerCase())) {
             HashMap<String, String> banInfo = null;
