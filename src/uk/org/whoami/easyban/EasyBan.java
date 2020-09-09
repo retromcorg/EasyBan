@@ -86,14 +86,14 @@ public class EasyBan extends JavaPlugin {
 
         if (settings.isAuthmeHookEnabled()) {
             if (pm.getPlugin("AuthMe") != null) {
-                Double versionD = Double.valueOf(pm.getPlugin("AuthMe").getDescription().getVersion());
-                if (versionD >= 2.8) {
-                    ConsoleLogger.info("AuthMe Hook Established | Authme Version: " + versionD);
-                    AuthmeHook = true;
-                } else {
-                    ConsoleLogger.info("Easyban With Newer Versions Of AuthMe Has Better Functionality, You Should Consider Upgrading https://github.com/RhysB/RetroMC-Authme");
-                }
-
+//                Double versionD = Double.valueOf(pm.getPlugin("AuthMe").getDescription().getVersion());
+//                if (versionD >= 2.8) {
+                    ConsoleLogger.info("AuthMe Hook Established | Authme Version: " + pm.getPlugin("AuthMe").getDescription().getVersion());
+                AuthmeHook = true;
+//                } else {
+//                    ConsoleLogger.info("Easyban With Newer Versions Of AuthMe Has Better Functionality, You Should Consider Upgrading https://github.com/RhysB/RetroMC-Authme");
+//                }
+//
             }
         }
 
